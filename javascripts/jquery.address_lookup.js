@@ -89,16 +89,19 @@
             });
         },
         _searchStreetsInArea: function(location) {
-            var longCorrection = 0.0003;
+            var longCorrection = 0.0006;
+            var latCorrection = 0.0006;
             var self = this;
 
             this.request_feedback = 0;
             this.suggested_streets = [];
             this.temp_location = location;
             var try_locations = [];
-            try_locations.push(new google.maps.LatLng(location.lat(), location.lng() + longCorrection));
             try_locations.push(new google.maps.LatLng(location.lat(), location.lng()));
-            try_locations.push(new google.maps.LatLng(location.lat(), location.lng() - longCorrection));
+            try_locations.push(new google.maps.LatLng(location.lat() + latCorrection, location.lng() + longCorrection));
+            try_locations.push(new google.maps.LatLng(location.lat() + latCorrection, location.lng() - longCorrection));
+            try_locations.push(new google.maps.LatLng(location.lat() - latCorrection, location.lng() + longCorrection));
+            try_locations.push(new google.maps.LatLng(location.lat() - latCorrection, location.lng() - longCorrection));
 
             for (var index in try_locations) {
                 this.geocoder.geocode({ 'latLng': try_locations[index] }, function(results, status) {
@@ -113,6 +116,7 @@
                     } else {
                         alert(status);
                     }
+                    alert(suggest);
                     self._addPotentialStreetNames(suggest, location);
                 });
             }
@@ -123,7 +127,7 @@
                     if ($.inArray(street_names[index], this.suggested_streets) == -1)
                         this.suggested_streets.push(street_names[index]);
             this.request_feedback ++;
-            if (this.request_feedback == 3) // All feedback collected
+            if (this.request_feedback == 5) // All feedback collected
                 if (this.suggested_streets.length == 1) {
                     this.field_values.street = this.suggested_streets[0];
                     this._setLocation(this.temp_location);
